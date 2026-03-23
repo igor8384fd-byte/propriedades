@@ -21,7 +21,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); padding-bottom: 50px; }
 
-        /* TELA DE LOGIN */
+        /* TELA DE LOGIN (Senha: 1234) */
         #loginScreen {
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; background: #0f172a;
@@ -55,12 +55,12 @@
         th { 
             background: #f1f5f9; padding: 10px; font-size: 11px; color: #475569; 
             border-bottom: 2px solid var(--border); 
-            border-right: 1px solid var(--border); /* Linhas verticais no topo */
+            border-right: 1px solid var(--border);
         }
         
         td { 
             padding: 4px; border-bottom: 1px solid var(--border-light); 
-            border-right: 1px solid var(--border-light); /* Linhas verticais nas células */
+            border-right: 1px solid var(--border-light);
         }
 
         .field-edit { width: 100%; border: none; background: transparent; padding: 6px; font-size: 12px; outline: none; }
@@ -81,7 +81,7 @@
             <h2>Gestão Nexia</h2>
             <form id="loginForm">
                 <input type="password" id="password" placeholder="Senha de Acesso" required autofocus>
-                <button type="submit" class="btn-entrar">ENTRAR</button>
+                <button type="submit" class="btn-entrar">ENTRAR NO SISTEMA</button>
             </form>
         </div>
     </div>
@@ -107,7 +107,7 @@
             { id: "tch", nome: "Condomínio Tchalla", espaços: 4 },
             { id: "kit", nome: "Condomínio Kito", espaços: 7 },
             { id: "cli", nome: "Condomínio Clinton", espaços: 8 },
-            { id: "pem", nome: "Condomínio Pembele", espaços: 8 },
+            { id: "pem", nome: "Condomínio Pembele", espaços: 10 }, 
             { id: "ame", nome: "Condomínio Amélia", espaços: 8 },
             { id: "sil", nome: "Condomínio Silvia", espaços: 8 },
             { id: "kho", nome: "Condomínio Khongolote", espaços: 8 },
@@ -117,6 +117,7 @@
         let dbStatus = {};
         let dbClientes = {};
 
+        // LOGIN COM SENHA 1234
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             if (document.getElementById('password').value === '1234') {
@@ -153,7 +154,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th colspan="4">Identificação</th><th colspan="4">Financeiro</th><th colspan="${meses.length}">Meses</th>
+                                    <th colspan="4">Identificação</th><th colspan="4">Financeiro</th><th colspan="${meses.length}">Histórico</th>
                                 </tr>
                                 <tr>
                                     <th style="width:180px">Nome</th><th style="width:110px">Tel</th><th style="width:50px">Casa</th><th style="width:90px">Preço</th>
