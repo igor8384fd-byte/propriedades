@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Água </title>
+    <title>Nexia - Gestão de Água Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -15,13 +15,14 @@
             --pago: #10b981;
             --nao-pago: #ef4444;
             --pendente: #f59e0b;
-            --border: #e2e8f0;
+            --border: #cbd5e1; /* Cor da borda mais visível */
+            --border-light: #e2e8f0;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text); padding-bottom: 40px; }
 
-        /* TELA DE LOGIN ANTIGA REESTILIZADA */
+        /* TELA DE LOGIN ANTIGA */
         #loginScreen {
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -30,72 +31,73 @@
             background: white; padding: 40px; border-radius: 20px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); width: 90%; max-width: 380px; text-align: center;
         }
-        .login-box h2 { margin-bottom: 10px; font-weight: 700; color: #0f172a; }
-        .login-box p { color: #64748b; margin-bottom: 25px; font-size: 14px; }
         input[type="password"] {
             width: 100%; padding: 14px; margin-bottom: 20px;
-            border: 2px solid var(--border); border-radius: 10px; font-size: 16px; transition: 0.3s;
+            border: 2px solid var(--border-light); border-radius: 10px; font-size: 16px; outline: none;
         }
-        input[type="password"]:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
         .btn-entrar {
             width: 100%; padding: 14px; background: var(--primary);
-            color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px; transition: 0.2s;
+            color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px;
         }
-        .btn-entrar:hover { background: #1d4ed8; transform: translateY(-1px); }
 
-        /* DASHBOARD MODERNO */
-        #mainScreen { display: none; padding: 30px; max-width: 1600px; margin: 0 auto; }
-        .header { 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
-        }
-        .header h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        /* DASHBOARD */
+        #mainScreen { display: none; padding: 30px; max-width: 100%; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .status-badge { font-size: 12px; background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; margin-left: 10px; }
 
         .condo-card { 
             background: var(--card); border-radius: 16px; padding: 24px; margin-bottom: 40px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid var(--border-light);
         }
-        .condo-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 20px; display: inline-block; outline: none; }
+        .condo-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 20px; }
 
-        /* TABELA ESTILO PLANILHA MODERNA */
         .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; min-width: 2200px; }
-        th { background: #f1f5f9; padding: 12px; text-align: center; font-size: 11px; text-transform: uppercase; color: #475569; font-weight: 600; border-bottom: 2px solid var(--border); }
-        td { padding: 8px; border-bottom: 1px solid var(--border); border-right: 1px solid #f1f5f9; }
+        table { width: 100%; border-collapse: collapse; min-width: 2400px; table-layout: fixed; }
+        
+        /* Larguras das colunas */
+        th.col-nome { width: 200px; }
+        th.col-tel { width: 120px; }
+        th.col-casa { width: 60px; }
+        th.col-fin { width: 100px; }
+        th.col-obs { width: 150px; }
+        th.col-tipo { width: 100px; }
+        th.col-mes { width: 90px; }
 
-        .field-edit { 
-            width: 100%; border: 1px solid transparent; background: transparent; 
-            padding: 6px; font-size: 12px; border-radius: 6px; transition: 0.2s;
+        th { 
+            background: #f1f5f9; padding: 12px; font-size: 11px; color: #475569; 
+            border-bottom: 2px solid var(--border); 
+            border-right: 1px solid var(--border); /* Linha vertical no header */
+            position: sticky; top: 0; z-index: 10;
         }
-        .field-edit:focus { background: #fff; border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        th:last-child { border-right: none; }
 
-        /* BOTÕES DE STATUS */
-        .btn-status {
-            width: 85px; padding: 7px; border: none; border-radius: 6px;
-            cursor: pointer; font-weight: 700; font-size: 9px; text-transform: uppercase; transition: 0.2s;
+        td { 
+            padding: 4px; 
+            border-bottom: 1px solid var(--border-light); 
+            border-right: 1px solid var(--border-light); /* Linha vertical nas células */
         }
-        .btn-status:active { transform: scale(0.95); }
+        td:last-child { border-right: none; }
+        
+        tr:hover td { background-color: #f8fafc; }
+
+        .field-edit { width: 100%; border: 1px solid transparent; background: transparent; padding: 6px; font-size: 12px; border-radius: 6px; }
+        .field-edit:focus { background: #fff; border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
+
+        .btn-status { width: 100%; padding: 7px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 9px; text-transform: uppercase; }
         .nao-pago { background: #fee2e2; color: #991b1b; }
         .pago { background: #dcfce7; color: #166534; }
         .pendente { background: #fef3c7; color: #92400e; }
 
-        /* ÁREA DE NOTAS */
-        .notes-section { margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px; }
-        .notes-label { font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block; }
-        .notes-area {
-            width: 100%; min-height: 80px; padding: 12px; border: 1px solid var(--border);
-            border-radius: 10px; background: #fffbeb; font-size: 13px; resize: vertical; outline: none; transition: 0.2s;
-        }
-        .notes-area:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
+        .notes-section { margin-top: 20px; border-top: 1px dashed var(--border-light); padding-top: 15px; }
+        .notes-area { width: 100%; min-height: 80px; padding: 12px; border: 1px solid var(--border-light); border-radius: 10px; background: #fffbeb; font-size: 13px; outline: none; resize: vertical; }
+        .notes-area:focus { border-color: var(--pendente); }
     </style>
 </head>
 <body>
 
     <div id="loginScreen">
         <div class="login-box">
-            <h2>Bem-vindo</h2>
-            <p>Digite sua senha para acessar</p>
+            <h2>Nexia Gestão</h2>
             <form id="loginForm">
                 <input type="password" id="password" placeholder="Senha" required autofocus>
                 <button type="submit" class="btn-entrar">ENTRAR</button>
@@ -105,8 +107,8 @@
 
     <div id="mainScreen">
         <div class="header">
-            <h1>Gestão de Água <span id="syncLabel" class="status-badge">Sincronizando...</span></h1>
-            <button class="btn-entrar" style="width:auto; padding: 10px 20px;" onclick="location.reload()">Atualizar Dados</button>
+            <h1>Controle de Água <span id="syncLabel" class="status-badge">Sincronizando...</span></h1>
+            <button class="btn-entrar" style="width:auto; padding: 10px 20px;" onclick="location.reload()">Atualizar</button>
         </div>
         <div id="content"></div>
     </div>
@@ -117,13 +119,14 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const meses = ['Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26', 'Out/26', 'Nov/26', 'Dez/26'];
+        
         const condominios = [
             { id: "mor", nome: "Condomínio Morrez", espaços: 8 },
-            { id: "kit", nome: "Condomínio Kito", espaços: 8 },
+            { id: "mus", nome: "Condomínio Mussone", espaços: 4 },
+            { id: "tch", nome: "Condomínio Tchalla", espaços: 4 },
+            { id: "kit", nome: "Condomínio Kito", espaços: 7 },
             { id: "cli", nome: "Condomínio Clinton", espaços: 8 },
-            { id: "mus", nome: "Condomínio Mussone", espaços: 8 },
             { id: "pem", nome: "Condomínio Pembele", espaços: 8 },
-            { id: "tch", nome: "Condomínio Tchalla", espaços: 8 },
             { id: "ame", nome: "Condomínio Amélia", espaços: 8 },
             { id: "sil", nome: "Condomínio Silvia", espaços: 8 },
             { id: "kho", nome: "Condomínio Khongolote", espaços: 8 },
@@ -138,7 +141,7 @@
             if (document.getElementById('password').value === '1234') {
                 localStorage.setItem('auth_nexia_pro', 'true');
                 iniciarSistema();
-            } else { alert('Acesso Negado: Senha Incorreta'); }
+            } else { alert('Senha Incorreta'); }
         });
 
         async function iniciarSistema() {
@@ -165,19 +168,25 @@
                 const condoData = dbClientes[condo.id] || {};
                 let html = `
                 <div class="condo-card">
-                    <div class="condo-title" contenteditable="true" onblur="salvarCliente('${condo.id}', 'nome', this.innerText)">${condo.nome}</div>
+                    <div class="condo-title">${condo.nome}</div>
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th colspan="4" style="background:#f8fafc">Identificação</th>
-                                    <th colspan="4" style="background:#f1f5f9">Financeiro</th>
-                                    <th colspan="${meses.length}" style="background:#f8fafc">Controle Mensal (2025-2026)</th>
+                                    <th colspan="4" style="border-right: 2px solid var(--border);">Identificação</th>
+                                    <th colspan="4" style="border-right: 2px solid var(--border);">Financeiro</th>
+                                    <th colspan="${meses.length}">Meses</th>
                                 </tr>
                                 <tr>
-                                    <th>Nome do Morador</th><th>Contacto</th><th>Casa</th><th>Preço</th>
-                                    <th>Dívida</th><th>Valor Total</th><th>Observação</th><th>Tipo</th>
-                                    ${meses.map(m => `<th>${m}</th>`).join('')}
+                                    <th class="col-nome">Nome</th>
+                                    <th class="col-tel">Tel</th>
+                                    <th class="col-casa">Casa</th>
+                                    <th class="col-fin" style="border-right: 2px solid var(--border);">Preço</th>
+                                    <th class="col-fin">Dívida</th>
+                                    <th class="col-fin">Total</th>
+                                    <th class="col-obs">Obs</th>
+                                    <th class="col-tipo" style="border-right: 2px solid var(--border);">Tipo</th>
+                                    ${meses.map(m => `<th class="col-mes">${m}</th>`).join('')}
                                 </tr>
                             </thead>
                             <tbody>`;
@@ -189,12 +198,12 @@
                         <tr>
                             <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'nome', this.value)" value="${d.nome || ''}" placeholder="..."></td>
                             <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'contacto', this.value)" value="${d.contacto || ''}" placeholder="..."></td>
-                            <td><span style="font-weight:700; color:#64748b">#${i}</span></td>
-                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'preco_agua', this.value)" value="${d.preco_agua || ''}" placeholder="MT"></td>
+                            <td style="text-align:center;"><strong>#${i}</strong></td>
+                            <td style="border-right: 2px solid var(--border-light);"><input class="field-edit" onchange="salvarCliente('${rowId}', 'preco_agua', this.value)" value="${d.preco_agua || ''}" placeholder="MT"></td>
                             <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'divida', this.value)" value="${d.divida || ''}" placeholder="MT"></td>
                             <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'valor_total', this.value)" value="${d.valor_total || ''}" placeholder="MT"></td>
                             <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'observacao', this.value)" value="${d.observacao || ''}" placeholder="..."></td>
-                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'pagamento_tipo', this.value)" value="${d.pagamento_tipo || ''}" placeholder="..."></td>
+                            <td style="border-right: 2px solid var(--border-light);"><input class="field-edit" onchange="salvarCliente('${rowId}', 'pagamento_tipo', this.value)" value="${d.pagamento_tipo || ''}" placeholder="..."></td>
                             ${meses.map(m => {
                                 const cid = `${rowId}-${m}`;
                                 const s = dbStatus[cid] || 'nao-pago';
@@ -205,8 +214,7 @@
 
                 html += `</tbody></table></div>
                     <div class="notes-section">
-                        <label class="notes-label">Notas do Condomínio:</label>
-                        <textarea class="notes-area" onchange="salvarCliente('${condo.id}', 'notas_condominio', this.value)" placeholder="Escreva avisos ou detalhes importantes aqui...">${condoData.notas_condominio || ''}</textarea>
+                        <textarea class="notes-area" onchange="salvarCliente('${condo.id}', 'notas_condominio', this.value)" placeholder="Notas do Condomínio...">${condoData.notas_condominio || ''}</textarea>
                     </div>
                 </div>`;
                 container.innerHTML += html;
@@ -215,29 +223,22 @@
 
         async function salvarCliente(id, campo, valor) {
             document.getElementById('syncLabel').innerText = "Salvando...";
-            document.getElementById('syncLabel').style.background = "#fff7ed";
-            document.getElementById('syncLabel').style.color = "#9a3412";
-            
             const obj = { id: id };
             obj[campo] = valor;
             await _supabase.from('dados_clientes').upsert(obj);
-            
-            document.getElementById('syncLabel').innerText = "Salvo com sucesso";
-            document.getElementById('syncLabel').style.background = "#dcfce7";
-            document.getElementById('syncLabel').style.color = "#166534";
+            document.getElementById('syncLabel').innerText = "Salvo";
         }
 
         async function mudarStatus(id, btn) {
             const cur = btn.classList.contains('nao-pago') ? 'nao-pago' : btn.classList.contains('pendente') ? 'pendente' : 'pago';
             const nxt = cur === 'nao-pago' ? 'pendente' : cur === 'pendente' ? 'pago' : 'nao-pago';
-            
             btn.className = `btn-status ${nxt}`;
             btn.innerText = nxt.toUpperCase();
-            
             await _supabase.from('pagamentos').upsert({ id: id, status: nxt });
         }
 
         window.onload = () => { if (localStorage.getItem('auth_nexia_pro') === 'true') iniciarSistema(); };
     </script>
 </body>
-</html>
+    </html>
+
