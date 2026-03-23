@@ -3,998 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Pagamentos de Água</title>
-    <!-- Supabase -->
+    <title>Sistema Nexia - Gestão de Água</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #2c3e50;
+            --pago: #27ae60;
+            --nao-pago: #e74c3c;
+            --pendente: #f1c40f;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f0f2f5; padding-bottom: 50px; }
 
-        /* ===== TELA DE LOGIN ===== */
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* TELA DE LOGIN */
+        #loginScreen {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
         }
-
         .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-            animation: slideIn 0.5s ease-out;
+            background: white; padding: 40px; border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 100%; max-width: 350px; text-align: center;
+        }
+        input[type="password"] {
+            width: 100%; padding: 12px; margin-bottom: 20px;
+            border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none;
+        }
+        .btn-entrar {
+            width: 100%; padding: 12px; background: var(--primary);
+            color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;
         }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* TELA PRINCIPAL */
+        #mainScreen { display: none; padding: 20px; }
+        .header { 
+            background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .logout-btn { background: #666; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
 
-        .login-box h1 {
-            color: #667eea;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 28px;
+        /* ESTILO PLANILHA */
+        .condo-section { background: white; border-radius: 10px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .condo-title { 
+            font-size: 1.5rem; color: var(--primary); border-left: 5px solid var(--primary); 
+            padding: 5px 15px; margin-bottom: 10px; display: inline-block;
+            cursor: text; background: #f9f9f9; border-radius: 0 5px 5px 0; outline: none;
         }
+        
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 2000px; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; font-size: 12px; }
+        th { background: #edf2f7; color: #4a5568; white-space: nowrap; }
 
-        .login-subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
+        .col-dados { background: #f8fafc; text-align: left; min-width: 110px; }
+        input.field-edit { width: 100%; border: none; background: transparent; font-size: 11px; outline: none; }
+
+        /* BOTÕES DE STATUS */
+        .btn-status {
+            width: 80px; padding: 6px; border: none; border-radius: 4px;
+            cursor: pointer; font-weight: bold; font-size: 9px; text-transform: uppercase; color: white;
         }
-
-        .login-form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn-login {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
-        .login-error {
-            color: #e74c3c;
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .login-error.show {
-            display: block;
-            animation: shake 0.5s;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        /* ===== TELA PRINCIPAL ===== */
-        .main-container {
-            min-height: 100vh;
-            background-color: #f5f5f5;
-            padding-bottom: 40px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            margin: 0;
-        }
-
-        .btn-logout {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px 20px;
-            border: 2px solid white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-logout:hover {
-            background-color: white;
-            color: #667eea;
-        }
-
-        /* ===== SEÇÃO DE CONDOMÍNIO ===== */
-        .condominio-section {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .condominio-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px 8px 0 0;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .condominio-title {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .condominio-title:hover {
-            opacity: 0.8;
-        }
-
-        .edit-title-icon {
-            font-size: 16px;
-            opacity: 0.7;
-        }
-
-        .condominio-title:hover .edit-title-icon {
-            opacity: 1;
-        }
-
-        .title-input {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 22px;
-            font-weight: 700;
-            width: 300px;
-        }
-
-        .title-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .title-input:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* ===== PLANILHA ===== */
-        .spreadsheet-container {
-            background: white;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            overflow-x: auto;
-            margin-bottom: 20px;
-        }
-
-        .spreadsheet {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        .spreadsheet thead {
-            background-color: #f8f9fa;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .spreadsheet th {
-            padding: 15px 10px;
-            text-align: left;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #e0e0e0;
-            white-space: nowrap;
-        }
-
-        .spreadsheet td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .spreadsheet tbody tr:hover {
-            background-color: #f9f9f9;
-        }
-
-        .col-fixed {
-            background-color: #f8f9fa;
-            position: sticky;
-            left: 0;
-            z-index: 5;
-            min-width: 120px;
-        }
-
-        .col-fixed:nth-child(1) {
-            min-width: 140px;
-        }
-
-        .col-fixed:nth-child(2) {
-            min-width: 130px;
-        }
-
-        .col-fixed:nth-child(3) {
-            min-width: 80px;
-        }
-
-        .col-fixed:nth-child(4) {
-            min-width: 100px;
-        }
-
-        .col-month {
-            text-align: center;
-            min-width: 110px;
-        }
-
-        /* ===== CAMPOS EDITÁVEIS ===== */
-        .editable-cell {
-            cursor: pointer;
-            position: relative;
-            padding: 8px;
-            border-radius: 3px;
-            transition: background-color 0.2s;
-        }
-
-        .editable-cell:hover {
-            background-color: #e8f4f8;
-        }
-
-        .editable-cell input {
-            width: 100%;
-            padding: 6px;
-            border: 2px solid #667eea;
-            border-radius: 3px;
-            font-size: 13px;
-            font-family: inherit;
-        }
-
-        .editable-cell input:focus {
-            outline: none;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
-        }
-
-        .edit-icon {
-            font-size: 10px;
-            color: #667eea;
-            margin-left: 5px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .editable-cell:hover .edit-icon {
-            opacity: 1;
-        }
-
-        /* ===== BOTÕES DE STATUS ===== */
-        .status-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 12px;
-            transition: all 0.3s;
-            width: 100%;
-            text-transform: uppercase;
-        }
-
-        .status-btn.pago {
-            background-color: #27ae60;
-            color: white;
-        }
-
-        .status-btn.pago:hover {
-            background-color: #229954;
-            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
-        }
-
-        .status-btn.nao-pago {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .status-btn.nao-pago:hover {
-            background-color: #c0392b;
-            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
-        }
-
-        .status-btn.pendente {
-            background-color: #f39c12;
-            color: white;
-        }
-
-        .status-btn.pendente:hover {
-            background-color: #e67e22;
-            box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
-        }
-
-        /* ===== RESPONSIVIDADE ===== */
-        @media (max-width: 768px) {
-            .login-box {
-                margin: 20px;
-                padding: 30px 20px;
-            }
-
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .header h1 {
-                font-size: 20px;
-            }
-
-            .condominio-header {
-                font-size: 18px;
-            }
-
-            .spreadsheet {
-                font-size: 12px;
-            }
-
-            .spreadsheet th,
-            .spreadsheet td {
-                padding: 10px 8px;
-            }
-
-            .col-fixed {
-                min-width: 100px;
-            }
-
-            .col-month {
-                min-width: 90px;
-            }
-
-            .status-btn {
-                padding: 5px 8px;
-                font-size: 11px;
-            }
-
-            .title-input {
-                width: 200px;
-                font-size: 18px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .spreadsheet {
-                font-size: 11px;
-            }
-
-            .spreadsheet th,
-            .spreadsheet td {
-                padding: 8px 6px;
-            }
-
-            .col-fixed {
-                min-width: 80px;
-            }
-
-            .col-month {
-                min-width: 80px;
-            }
-
-            .status-btn {
-                padding: 4px 6px;
-                font-size: 10px;
-            }
-
-            .title-input {
-                width: 150px;
-                font-size: 16px;
-            }
+        .nao-pago { background-color: var(--nao-pago); }
+        .pago { background-color: var(--pago); }
+        .pendente { background-color: var(--pendente); color: #333; }
+
+        .notes-area {
+            margin-top: 15px; width: 100%; min-height: 60px; padding: 10px;
+            border: 1px solid #e2e8f0; border-radius: 5px; background: #fffdf0;
+            font-size: 13px; resize: vertical; outline: none;
         }
     </style>
 </head>
 <body>
-    <!-- Tela de Login -->
-    <div id="loginScreen" class="login-container">
+
+    <div id="loginScreen">
         <div class="login-box">
-            <h1>Gestão de Pagamentos de Água</h1>
-            <p class="login-subtitle">Sistema de Controle de Condomínios</p>
-            
-            <form id="loginForm" class="login-form">
-                <div class="form-group">
-                    <label for="password">Senha:</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        placeholder="Digite a senha" 
-                        required
-                    >
-                </div>
-                <button type="submit" class="btn-login">Entrar</button>
-                <p class="login-error" id="loginError"></p>
+            <h2>Gestão Nexia</h2>
+            <form id="loginForm">
+                <input type="password" id="password" placeholder="Senha: 1234" required>
+                <button type="submit" class="btn-entrar">ENTRAR NO SISTEMA</button>
             </form>
         </div>
     </div>
 
-    <!-- Tela Principal - Planilha -->
-    <div id="mainScreen" class="main-container" style="display: none;">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1>Gestão de Pagamentos de Água</h1>
-                <button id="logoutBtn" class="btn-logout">Sair</button>
-            </div>
-        </header>
-
-        <!-- Condomínios -->
-        <div id="condominiosContainer"></div>
+    <div id="mainScreen">
+        <div class="header">
+            <h1>Controle de Água </h1>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+        <div id="content"></div>
     </div>
 
     <script>
-        // Configuração do Supabase
+        // CONFIGURAÇÃO SUPABASE
         const SUPABASE_URL = 'https://dwznzdnvtezhkqzqwrsa.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_ZajKS3fZjhbLeGLdo-2IsA_sQgarlui';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Dados dos condomínios e clientes
-        const condominios = {
-            'Kito': [
-                { nome: 'João Silva', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Maria Santos', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Pedro Oliveira', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Ana Costa', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Carlos Ferreira', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Lucia Martins', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Roberto Alves', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Fernanda Gomes', contacto: '(11) 99876-5432', casa: 'Apartamento 8', preco: '150.00' }
-            ],
-            'Clinton': [
-                { nome: 'Lucas Barbosa', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Juliana Rocha', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Felipe Mendes', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Beatriz Cardoso', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Gustavo Ribeiro', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Camila Sousa', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Thiago Neves', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Isabela Teixeira', contacto: '(11) 99876-5432', casa: 'Casa 8', preco: '150.00' }
-            ],
-            'Morrez': [
-                { nome: 'Marcelo Dias', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Vanessa Lima', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Adriano Pereira', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Patrícia Monteiro', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Raphael Cunha', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Simone Machado', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Diego Barbosa', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Cristina Souza', contacto: '(11) 99876-5432', casa: 'Casa 8', preco: '150.00' }
-            ],
-            'Mussone': [
-                { nome: 'Cliente 1', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Cliente 2', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Cliente 3', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Cliente 4', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Cliente 5', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Cliente 6', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Cliente 7', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Cliente 8', contacto: '(11) 99876-5432', casa: 'Casa 8', preco: '150.00' }
-            ],
-            'Pembele': [
-                { nome: 'Residente 1', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Residente 2', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Residente 3', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Residente 4', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Residente 5', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Residente 6', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Residente 7', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Residente 8', contacto: '(11) 99876-5432', casa: 'Casa 8', preco: '150.00' }
-            ],
-            'Tchalla': [
-                { nome: 'Morador 1', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Morador 2', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Morador 3', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Morador 4', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Morador 5', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Morador 6', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Morador 7', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Morador 8', contacto: '(11) 99876-5432', casa: 'Casa 8', preco: '150.00' }
-            ],
-            'Amélia': [
-                { nome: 'Ocupante 1', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Ocupante 2', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Ocupante 3', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Ocupante 4', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Ocupante 5', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Ocupante 6', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Ocupante 7', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Ocupante 8', contacto: '(11) 99876-5432', casa: 'Casa 8', preco: '150.00' }
-            ],
-            'Silvia': [
-                { nome: 'Habitante 1', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Habitante 2', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Habitante 3', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Habitante 4', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Habitante 5', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Habitante 6', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Habitante 7', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Habitante 8', contacto: '(11) 99876-5432', casa: 'Casa 8', preco: '150.00' }
-            ],
-            'Khongolote': [
-                { nome: 'Pessoa 1', contacto: '(11) 98765-4321', casa: 'Casa 1', preco: '150.00' },
-                { nome: 'Pessoa 2', contacto: '(11) 99876-5432', casa: 'Casa 2', preco: '150.00' },
-                { nome: 'Pessoa 3', contacto: '(11) 97654-3210', casa: 'Casa 3', preco: '150.00' },
-                { nome: 'Pessoa 4', contacto: '(11) 98765-4321', casa: 'Casa 4', preco: '150.00' },
-                { nome: 'Pessoa 5', contacto: '(11) 99876-5432', casa: 'Casa 5', preco: '150.00' },
-                { nome: 'Pessoa 6', contacto: '(11) 97654-3210', casa: 'Casa 6', preco: '150.00' },
-                { nome: 'Pessoa 7', contacto: '(11) 98765-4321', casa: 'Casa 7', preco: '150.00' },
-                { nome: 'Pessoa 8', contacto: '(11) 99876-5432', casa: 'Casa 8', preco: '150.00' }
-            ],
-            'Casa Grande': [
-                { nome: 'Proprietário Principal', contacto: '(11) 98765-4321', casa: 'Propriedade Principal', preco: '500.00' }
-            ]
-        };
+        const meses = ['Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26', 'Out/26', 'Nov/26', 'Dez/26'];
 
-        // Meses
-        const meses = [
-            'out-2025', 'nov-2025', 'dez-2025',
-            'jan-2026', 'fev-2026', 'mar-2026',
-            'abr-2026', 'mai-2026', 'jun-2026',
-            'jul-2026', 'ago-2026', 'set-2026',
-            'out-2026', 'nov-2026', 'dez-2026'
+        const condominios = [
+            { id: "morrez", nome: "Condomínio Morrez", espaços: 8 },
+            { id: "kito", nome: "Condomínio Kito", espaços: 8 },
+            { id: "clinton", nome: "Condomínio Clinton", espaços: 8 },
+            { id: "mussone", nome: "Condomínio Mussone", espaços: 8 },
+            { id: "pembele", nome: "Condomínio Pembele", espaços: 8 },
+            { id: "tchalla", nome: "Condomínio Tchalla", espaços: 8 },
+            { id: "amelia", nome: "Condomínio Amélia", espaços: 8 },
+            { id: "silvia", nome: "Condomínio Silvia", espaços: 8 },
+            { id: "khongolote", nome: "Condomínio Khongolote", espaços: 8 },
+            { id: "casagrande", nome: "Casa Grande", espaços: 1 }
         ];
 
-        const mesesLabels = [
-            'Out 2025', 'Nov 2025', 'Dez 2025',
-            'Jan 2026', 'Fev 2026', 'Mar 2026',
-            'Abr 2026', 'Mai 2026', 'Jun 2026',
-            'Jul 2026', 'Ago 2026', 'Set 2026',
-            'Out 2026', 'Nov 2026', 'Dez 2026'
-        ];
-
-        // Armazenar dados de status e edições
         let statusData = {};
-        let clientesData = {};
-        let nomesCondominios = {};
 
-        // Função para salvar dados no Supabase
-        async function saveToSupabase(table, data) {
-            try {
-                const { data: result, error } = await supabase
-                    .from(table)
-                    .upsert(data, { onConflict: 'id' });
-                
-                if (error) {
-                    console.error('Erro ao salvar no Supabase:', error);
-                    return false;
-                }
-                return true;
-            } catch (err) {
-                console.error('Erro na conexão com Supabase:', err);
-                return false;
-            }
-        }
-
-        // Função para carregar dados do Supabase
-        async function loadFromSupabase(table) {
-            try {
-                const { data, error } = await supabase
-                    .from(table)
-                    .select('*');
-                
-                if (error) {
-                    console.error('Erro ao carregar do Supabase:', error);
-                    return null;
-                }
-                return data;
-            } catch (err) {
-                console.error('Erro na conexão com Supabase:', err);
-                return null;
-            }
-        }
-
-        // Inicializar dados de status
-        function initializeStatusData() {
-            Object.keys(condominios).forEach(condominio => {
-                condominios[condominio].forEach((cliente, index) => {
-                    const clienteKey = `${condominio}-${index}`;
-                    statusData[clienteKey] = {};
-                    clientesData[clienteKey] = JSON.parse(JSON.stringify(cliente));
-                    meses.forEach(mes => {
-                        const randomStatus = ['pago', 'nao-pago', 'pendente'][Math.floor(Math.random() * 3)];
-                        statusData[clienteKey][mes] = randomStatus;
-                    });
-                });
-            });
-            localStorage.setItem('statusData', JSON.stringify(statusData));
-            localStorage.setItem('clientesData', JSON.stringify(clientesData));
-        }
-
-        // Carregar dados do localStorage
-        function loadData() {
-            const savedStatus = localStorage.getItem('statusData');
-            const savedClientes = localStorage.getItem('clientesData');
-            const savedNomes = localStorage.getItem('nomesCondominios');
-            
-            if (savedStatus) {
-                statusData = JSON.parse(savedStatus);
-            } else {
-                initializeStatusData();
-            }
-            
-            if (savedClientes) {
-                clientesData = JSON.parse(savedClientes);
-            } else {
-                Object.keys(condominios).forEach(condominio => {
-                    condominios[condominio].forEach((cliente, index) => {
-                        const clienteKey = `${condominio}-${index}`;
-                        clientesData[clienteKey] = JSON.parse(JSON.stringify(cliente));
-                    });
-                });
-                localStorage.setItem('clientesData', JSON.stringify(clientesData));
-            }
-
-            if (savedNomes) {
-                nomesCondominios = JSON.parse(savedNomes);
-            } else {
-                Object.keys(condominios).forEach(condominio => {
-                    nomesCondominios[condominio] = condominio;
-                });
-                localStorage.setItem('nomesCondominios', JSON.stringify(nomesCondominios));
-            }
-        }
-
-        // Alternar status
-        function toggleStatus(clienteKey, mes) {
-            const statusCiclo = {
-                'pago': 'nao-pago',
-                'nao-pago': 'pendente',
-                'pendente': 'pago'
-            };
-            
-            const currentStatus = statusData[clienteKey][mes];
-            statusData[clienteKey][mes] = statusCiclo[currentStatus];
-            
-            localStorage.setItem('statusData', JSON.stringify(statusData));
-            
-            // Salvar no Supabase
-            saveToSupabase('pagamentos', {
-                id: `${clienteKey}-${mes}`,
-                cliente_id: clienteKey,
-                mes: mes,
-                status: statusData[clienteKey][mes]
-            });
-            
-            const btn = document.querySelector(`[data-cliente="${clienteKey}"][data-mes="${mes}"]`);
-            if (btn) {
-                btn.className = `status-btn ${statusData[clienteKey][mes]}`;
-                btn.textContent = getStatusLabel(statusData[clienteKey][mes]);
-            }
-        }
-
-        // Obter label do status
-        function getStatusLabel(status) {
-            const labels = {
-                'pago': 'Pago',
-                'nao-pago': 'Não Pago',
-                'pendente': 'Pendente'
-            };
-            return labels[status];
-        }
-
-        // Criar célula editável
-        function createEditableCell(clienteKey, field, value) {
-            const cell = document.createElement('td');
-            cell.className = 'col-fixed editable-cell';
-            cell.innerHTML = `
-                <span class="cell-value">${value}</span>
-                <span class="edit-icon">✎</span>
-            `;
-            
-            cell.addEventListener('click', function() {
-                const currentValue = clientesData[clienteKey][field];
-                const input = document.createElement('input');
-                input.type = field === 'preco' ? 'number' : 'text';
-                if (field === 'preco') {
-                    input.step = '0.01';
-                }
-                input.value = currentValue;
-                
-                cell.innerHTML = '';
-                cell.appendChild(input);
-                input.focus();
-                
-                function saveEdit() {
-                    const newValue = input.value.trim() || currentValue;
-                    clientesData[clienteKey][field] = newValue;
-                    localStorage.setItem('clientesData', JSON.stringify(clientesData));
-                    
-                    // Salvar no Supabase
-                    saveToSupabase('clientes', {
-                        id: clienteKey,
-                        nome: clientesData[clienteKey].nome,
-                        contacto: clientesData[clienteKey].contacto,
-                        casa: clientesData[clienteKey].casa,
-                        preco: clientesData[clienteKey].preco
-                    });
-                    
-                    cell.innerHTML = `
-                        <span class="cell-value">${newValue}</span>
-                        <span class="edit-icon">✎</span>
-                    `;
-                }
-                
-                input.addEventListener('blur', saveEdit);
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        saveEdit();
-                    }
-                });
-            });
-            
-            return cell;
-        }
-
-        // Editar nome da propriedade
-        function editCondominioName(condominioKey, currentName) {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'title-input';
-            input.value = currentName;
-            
-            const titleElement = document.querySelector(`[data-condominio="${condominioKey}"]`);
-            if (!titleElement) return;
-            
-            titleElement.innerHTML = '';
-            titleElement.appendChild(input);
-            input.focus();
-            
-            function saveName() {
-                const newName = input.value.trim() || currentName;
-                nomesCondominios[condominioKey] = newName;
-                localStorage.setItem('nomesCondominios', JSON.stringify(nomesCondominios));
-                
-                // Salvar no Supabase
-                saveToSupabase('condominios', {
-                    id: condominioKey,
-                    nome: newName
-                });
-                
-                titleElement.innerHTML = `
-                    <span>${newName}</span>
-                    <span class="edit-title-icon">✎</span>
-                `;
-                
-                titleElement.addEventListener('click', () => editCondominioName(condominioKey, newName));
-            }
-            
-            input.addEventListener('blur', saveName);
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    saveName();
-                }
-            });
-        }
-
-        // Preencher planilha de um condomínio
-        function fillCondominioSpreadsheet(condominio) {
-            const section = document.createElement('div');
-            section.className = 'condominio-section';
-            
-            const header = document.createElement('div');
-            header.className = 'condominio-header';
-            
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'condominio-title';
-            titleDiv.setAttribute('data-condominio', condominio);
-            titleDiv.innerHTML = `
-                <span>${nomesCondominios[condominio] || condominio}</span>
-                <span class="edit-title-icon">✎</span>
-            `;
-            
-            titleDiv.addEventListener('click', () => editCondominioName(condominio, nomesCondominios[condominio] || condominio));
-            
-            header.appendChild(titleDiv);
-            section.appendChild(header);
-            
-            const container = document.createElement('div');
-            container.className = 'spreadsheet-container';
-            
-            const table = document.createElement('table');
-            table.className = 'spreadsheet';
-            
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-            
-            const headers = ['Nome', 'Contacto', 'Casa', 'Preço Água', ...mesesLabels];
-            headers.forEach(header => {
-                const th = document.createElement('th');
-                th.className = (header === 'Nome' || header === 'Contacto' || header === 'Casa' || header === 'Preço Água') ? 'col-fixed' : 'col-month';
-                th.textContent = header;
-                headerRow.appendChild(th);
-            });
-            
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-            
-            const tbody = document.createElement('tbody');
-            
-            condominios[condominio].forEach((cliente, index) => {
-                const row = document.createElement('tr');
-                const clienteKey = `${condominio}-${index}`;
-                
-                const nomeCell = createEditableCell(clienteKey, 'nome', clientesData[clienteKey]?.nome || cliente.nome);
-                const contactoCell = createEditableCell(clienteKey, 'contacto', clientesData[clienteKey]?.contacto || cliente.contacto);
-                const casaCell = createEditableCell(clienteKey, 'casa', clientesData[clienteKey]?.casa || cliente.casa);
-                const precoCell = createEditableCell(clienteKey, 'preco', clientesData[clienteKey]?.preco || cliente.preco);
-                
-                row.appendChild(nomeCell);
-                row.appendChild(contactoCell);
-                row.appendChild(casaCell);
-                row.appendChild(precoCell);
-                
-                meses.forEach(mes => {
-                    const cell = document.createElement('td');
-                    cell.className = 'col-month';
-                    
-                    const btn = document.createElement('button');
-                    btn.className = `status-btn ${statusData[clienteKey][mes]}`;
-                    btn.textContent = getStatusLabel(statusData[clienteKey][mes]);
-                    btn.setAttribute('data-cliente', clienteKey);
-                    btn.setAttribute('data-mes', mes);
-                    btn.onclick = (e) => {
-                        e.preventDefault();
-                        toggleStatus(clienteKey, mes);
-                    };
-                    
-                    cell.appendChild(btn);
-                    row.appendChild(cell);
-                });
-                
-                tbody.appendChild(row);
-            });
-            
-            table.appendChild(tbody);
-            container.appendChild(table);
-            section.appendChild(container);
-            
-            return section;
-        }
-
-        // Preencher todas as planilhas
-        function fillAllSpreadsheets() {
-            const container = document.getElementById('condominiosContainer');
-            container.innerHTML = '';
-            
-            const ordem = ['Kito', 'Clinton', 'Morrez', 'Mussone', 'Pembele', 'Tchalla', 'Amélia', 'Silvia', 'Khongolote', 'Casa Grande'];
-            
-            ordem.forEach(condominio => {
-                if (condominios[condominio]) {
-                    container.appendChild(fillCondominioSpreadsheet(condominio));
-                }
-            });
-        }
-
-        // Lógica de Login
+        // LOGIN
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('loginError');
-            
-            if (password === '1234') {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'block';
-                loadData();
-                fillAllSpreadsheets();
-                localStorage.setItem('isLoggedIn', 'true');
+            if (document.getElementById('password').value === '1234') {
+                abrirPainel();
             } else {
-                errorMsg.textContent = 'Senha incorreta!';
-                errorMsg.classList.add('show');
-                document.getElementById('password').value = '';
-                
-                setTimeout(() => {
-                    errorMsg.classList.remove('show');
-                }, 3000);
+                alert('Senha incorreta!');
             }
         });
 
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            document.getElementById('mainScreen').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('password').value = '';
-            localStorage.setItem('isLoggedIn', 'false');
-        });
+        function abrirPainel() {
+            localStorage.setItem('auth_nexia_final', 'true');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+            carregarDados();
+        }
 
-        // Verificar se já está logado
-        window.addEventListener('load', function() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (isLoggedIn) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainScreen').style.display = 'block';
-                loadData();
-                fillAllSpreadsheets();
-            } else {
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('mainScreen').style.display = 'none';
+        function logout() {
+            localStorage.removeItem('auth_nexia_final');
+            location.reload();
+        }
+
+        async function carregarDados() {
+            try {
+                const { data } = await _supabase.from('pagamentos').select('*');
+                if (data) {
+                    data.forEach(item => statusData[item.id] = item.status);
+                }
+            } catch (e) { console.log("Erro ao carregar"); }
+            renderizar();
+        }
+
+        function renderizar() {
+            const container = document.getElementById('content');
+            container.innerHTML = '';
+
+            condominios.forEach(condo => {
+                let html = `
+                    <div class="condo-section">
+                        <div class="condo-title" contenteditable="true" spellcheck="false">${condo.nome}</div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th colspan="4">Identificação do Cliente</th>
+                                        <th colspan="4">Dados Financeiros</th>
+                                        <th colspan="${meses.length}">Histórico de Pagamentos</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Nome</th><th>Contacto</th><th>Casa</th><th>Preço Água</th>
+                                        <th>Dívida</th><th>Valor Total</th><th>Observação</th><th>Pagamento</th>
+                                        ${meses.map(m => `<th>${m}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                for (let i = 1; i <= condo.espaços; i++) {
+                    html += `
+                        <tr>
+                            <td class="col-dados"><input class="field-edit" placeholder="Nome..."></td>
+                            <td class="col-dados"><input class="field-edit" placeholder="Tel..."></td>
+                            <td class="col-dados"><strong>Espaço ${i}</strong></td>
+                            <td class="col-dados"><input class="field-edit" placeholder="MT"></td>
+                            <td class="col-dados"><input class="field-edit" placeholder="MT"></td>
+                            <td class="col-dados"><input class="field-edit" placeholder="MT"></td>
+                            <td class="col-dados"><input class="field-edit" placeholder="..."></td>
+                            <td class="col-dados"><input class="field-edit" placeholder="Tipo..."></td>
+                            ${meses.map(m => {
+                                const id = `${condo.id}-${i}-${m}`;
+                                const st = statusData[id] || 'nao-pago';
+                                return `<td><button class="btn-status ${st}" onclick="mudarStatus('${id}', this)">${st.toUpperCase()}</button></td>`;
+                            }).join('')}
+                        </tr>
+                    `;
+                }
+
+                html += `</tbody></table></div>
+                        <textarea class="notes-area" placeholder="Notas sobre ${condo.nome}..."></textarea>
+                    </div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        async function mudarStatus(id, btn) {
+            const current = btn.classList.contains('nao-pago') ? 'nao-pago' : btn.classList.contains('pendente') ? 'pendente' : 'pago';
+            const next = current === 'nao-pago' ? 'pendente' : current === 'pendente' ? 'pago' : 'nao-pago';
+            
+            btn.className = `btn-status ${next}`;
+            btn.innerText = next.toUpperCase();
+            statusData[id] = next;
+
+            await _supabase.from('pagamentos').upsert({ id: id, status: next, mes: id.split('-').pop() });
+        }
+
+        window.onload = () => {
+            if (localStorage.getItem('auth_nexia_final') === 'true') {
+                abrirPainel();
             }
-        });
+        };
     </script>
 </body>
 </html>
