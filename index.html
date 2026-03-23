@@ -3,221 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Nexia - Gestão de Água</title>
+    <title>Gestão de Água </title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2c3e50;
-            --pago: #27ae60;
-            --nao-pago: #e74c3c;
-            --pendente: #f1c40f;
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --pago: #10b981;
+            --nao-pago: #ef4444;
+            --pendente: #f59e0b;
+            --border: #e2e8f0;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f0f2f5; padding-bottom: 50px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 40px; }
 
-        /* TELA DE LOGIN */
+        /* TELA DE LOGIN ANTIGA REESTILIZADA */
         #loginScreen {
             display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         }
         .login-box {
-            background: white; padding: 40px; border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 100%; max-width: 350px; text-align: center;
+            background: white; padding: 40px; border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); width: 90%; max-width: 380px; text-align: center;
         }
+        .login-box h2 { margin-bottom: 10px; font-weight: 700; color: #0f172a; }
+        .login-box p { color: #64748b; margin-bottom: 25px; font-size: 14px; }
         input[type="password"] {
-            width: 100%; padding: 12px; margin-bottom: 20px;
-            border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none;
+            width: 100%; padding: 14px; margin-bottom: 20px;
+            border: 2px solid var(--border); border-radius: 10px; font-size: 16px; transition: 0.3s;
         }
+        input[type="password"]:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
         .btn-entrar {
-            width: 100%; padding: 12px; background: var(--primary);
-            color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;
+            width: 100%; padding: 14px; background: var(--primary);
+            color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px; transition: 0.2s;
         }
+        .btn-entrar:hover { background: #1d4ed8; transform: translateY(-1px); }
 
-        /* TELA PRINCIPAL */
-        #mainScreen { display: none; padding: 20px; }
+        /* DASHBOARD MODERNO */
+        #mainScreen { display: none; padding: 30px; max-width: 1600px; margin: 0 auto; }
         .header { 
-            background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
         }
-        .logout-btn { background: #666; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        .header h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .status-badge { font-size: 12px; background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; margin-left: 10px; }
 
-        /* ESTILO PLANILHA */
-        .condo-section { background: white; border-radius: 10px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .condo-title { 
-            font-size: 1.5rem; color: var(--primary); border-left: 5px solid var(--primary); 
-            padding: 5px 15px; margin-bottom: 10px; display: inline-block;
-            cursor: text; background: #f9f9f9; border-radius: 0 5px 5px 0; outline: none;
+        .condo-card { 
+            background: var(--card); border-radius: 16px; padding: 24px; margin-bottom: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
         }
-        
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 2000px; }
-        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; font-size: 12px; }
-        th { background: #edf2f7; color: #4a5568; white-space: nowrap; }
+        .condo-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 20px; display: inline-block; outline: none; }
 
-        .col-dados { background: #f8fafc; text-align: left; min-width: 110px; }
-        input.field-edit { width: 100%; border: none; background: transparent; font-size: 11px; outline: none; }
+        /* TABELA ESTILO PLANILHA MODERNA */
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; min-width: 2200px; }
+        th { background: #f1f5f9; padding: 12px; text-align: center; font-size: 11px; text-transform: uppercase; color: #475569; font-weight: 600; border-bottom: 2px solid var(--border); }
+        td { padding: 8px; border-bottom: 1px solid var(--border); border-right: 1px solid #f1f5f9; }
+
+        .field-edit { 
+            width: 100%; border: 1px solid transparent; background: transparent; 
+            padding: 6px; font-size: 12px; border-radius: 6px; transition: 0.2s;
+        }
+        .field-edit:focus { background: #fff; border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 
         /* BOTÕES DE STATUS */
         .btn-status {
-            width: 80px; padding: 6px; border: none; border-radius: 4px;
-            cursor: pointer; font-weight: bold; font-size: 9px; text-transform: uppercase; color: white;
+            width: 85px; padding: 7px; border: none; border-radius: 6px;
+            cursor: pointer; font-weight: 700; font-size: 9px; text-transform: uppercase; transition: 0.2s;
         }
-        .nao-pago { background-color: var(--nao-pago); }
-        .pago { background-color: var(--pago); }
-        .pendente { background-color: var(--pendente); color: #333; }
+        .btn-status:active { transform: scale(0.95); }
+        .nao-pago { background: #fee2e2; color: #991b1b; }
+        .pago { background: #dcfce7; color: #166534; }
+        .pendente { background: #fef3c7; color: #92400e; }
 
+        /* ÁREA DE NOTAS */
+        .notes-section { margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px; }
+        .notes-label { font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block; }
         .notes-area {
-            margin-top: 15px; width: 100%; min-height: 60px; padding: 10px;
-            border: 1px solid #e2e8f0; border-radius: 5px; background: #fffdf0;
-            font-size: 13px; resize: vertical; outline: none;
+            width: 100%; min-height: 80px; padding: 12px; border: 1px solid var(--border);
+            border-radius: 10px; background: #fffbeb; font-size: 13px; resize: vertical; outline: none; transition: 0.2s;
         }
+        .notes-area:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
     </style>
 </head>
 <body>
 
     <div id="loginScreen">
         <div class="login-box">
-            <h2>Gestão Nexia</h2>
+            <h2>Bem-vindo</h2>
+            <p>Digite sua senha para acessar</p>
             <form id="loginForm">
-                <input type="password" id="password" placeholder="Senha: 1234" required>
-                <button type="submit" class="btn-entrar">ENTRAR NO SISTEMA</button>
+                <input type="password" id="password" placeholder="Senha" required autofocus>
+                <button type="submit" class="btn-entrar">ENTRAR</button>
             </form>
         </div>
     </div>
 
     <div id="mainScreen">
         <div class="header">
-            <h1>Controle de Água </h1>
-            <button class="logout-btn" onclick="logout()">Sair</button>
+            <h1>Gestão de Água <span id="syncLabel" class="status-badge">Sincronizando...</span></h1>
+            <button class="btn-entrar" style="width:auto; padding: 10px 20px;" onclick="location.reload()">Atualizar Dados</button>
         </div>
         <div id="content"></div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO SUPABASE
         const SUPABASE_URL = 'https://dwznzdnvtezhkqzqwrsa.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_ZajKS3fZjhbLeGLdo-2IsA_sQgarlui';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const meses = ['Out/25', 'Nov/25', 'Dez/25', 'Jan/26', 'Fev/26', 'Mar/26', 'Abr/26', 'Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26', 'Out/26', 'Nov/26', 'Dez/26'];
-
         const condominios = [
-            { id: "morrez", nome: "Condomínio Morrez", espaços: 8 },
-            { id: "kito", nome: "Condomínio Kito", espaços: 8 },
-            { id: "clinton", nome: "Condomínio Clinton", espaços: 8 },
-            { id: "mussone", nome: "Condomínio Mussone", espaços: 8 },
-            { id: "pembele", nome: "Condomínio Pembele", espaços: 8 },
-            { id: "tchalla", nome: "Condomínio Tchalla", espaços: 8 },
-            { id: "amelia", nome: "Condomínio Amélia", espaços: 8 },
-            { id: "silvia", nome: "Condomínio Silvia", espaços: 8 },
-            { id: "khongolote", nome: "Condomínio Khongolote", espaços: 8 },
-            { id: "casagrande", nome: "Casa Grande", espaços: 1 }
+            { id: "mor", nome: "Condomínio Morrez", espaços: 8 },
+            { id: "kit", nome: "Condomínio Kito", espaços: 8 },
+            { id: "cli", nome: "Condomínio Clinton", espaços: 8 },
+            { id: "mus", nome: "Condomínio Mussone", espaços: 8 },
+            { id: "pem", nome: "Condomínio Pembele", espaços: 8 },
+            { id: "tch", nome: "Condomínio Tchalla", espaços: 8 },
+            { id: "ame", nome: "Condomínio Amélia", espaços: 8 },
+            { id: "sil", nome: "Condomínio Silvia", espaços: 8 },
+            { id: "kho", nome: "Condomínio Khongolote", espaços: 8 },
+            { id: "cgr", nome: "Casa Grande", espaços: 1 }
         ];
 
-        let statusData = {};
+        let dbStatus = {};
+        let dbClientes = {};
 
-        // LOGIN
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             if (document.getElementById('password').value === '1234') {
-                abrirPainel();
-            } else {
-                alert('Senha incorreta!');
-            }
+                localStorage.setItem('auth_nexia_pro', 'true');
+                iniciarSistema();
+            } else { alert('Acesso Negado: Senha Incorreta'); }
         });
 
-        function abrirPainel() {
-            localStorage.setItem('auth_nexia_final', 'true');
+        async function iniciarSistema() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'block';
-            carregarDados();
+            
+            const [{ data: stData }, { data: clData }] = await Promise.all([
+                _supabase.from('pagamentos').select('*'),
+                _supabase.from('dados_clientes').select('*')
+            ]);
+
+            if (stData) stData.forEach(i => dbStatus[i.id] = i.status);
+            if (clData) clData.forEach(i => dbClientes[i.id] = i);
+
+            render();
+            document.getElementById('syncLabel').innerText = "Sistema Online";
         }
 
-        function logout() {
-            localStorage.removeItem('auth_nexia_final');
-            location.reload();
-        }
-
-        async function carregarDados() {
-            try {
-                const { data } = await _supabase.from('pagamentos').select('*');
-                if (data) {
-                    data.forEach(item => statusData[item.id] = item.status);
-                }
-            } catch (e) { console.log("Erro ao carregar"); }
-            renderizar();
-        }
-
-        function renderizar() {
+        function render() {
             const container = document.getElementById('content');
             container.innerHTML = '';
 
             condominios.forEach(condo => {
+                const condoData = dbClientes[condo.id] || {};
                 let html = `
-                    <div class="condo-section">
-                        <div class="condo-title" contenteditable="true" spellcheck="false">${condo.nome}</div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th colspan="4">Identificação do Cliente</th>
-                                        <th colspan="4">Dados Financeiros</th>
-                                        <th colspan="${meses.length}">Histórico de Pagamentos</th>
-                                    </tr>
-                                    <tr>
-                                        <th>Nome</th><th>Contacto</th><th>Casa</th><th>Preço Água</th>
-                                        <th>Dívida</th><th>Valor Total</th><th>Observação</th><th>Pagamento</th>
-                                        ${meses.map(m => `<th>${m}</th>`).join('')}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                `;
+                <div class="condo-card">
+                    <div class="condo-title" contenteditable="true" onblur="salvarCliente('${condo.id}', 'nome', this.innerText)">${condo.nome}</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th colspan="4" style="background:#f8fafc">Identificação</th>
+                                    <th colspan="4" style="background:#f1f5f9">Financeiro</th>
+                                    <th colspan="${meses.length}" style="background:#f8fafc">Controle Mensal (2025-2026)</th>
+                                </tr>
+                                <tr>
+                                    <th>Nome do Morador</th><th>Contacto</th><th>Casa</th><th>Preço</th>
+                                    <th>Dívida</th><th>Valor Total</th><th>Observação</th><th>Tipo</th>
+                                    ${meses.map(m => `<th>${m}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>`;
 
                 for (let i = 1; i <= condo.espaços; i++) {
+                    const rowId = `${condo.id}-${i}`;
+                    const d = dbClientes[rowId] || {};
                     html += `
                         <tr>
-                            <td class="col-dados"><input class="field-edit" placeholder="Nome..."></td>
-                            <td class="col-dados"><input class="field-edit" placeholder="Tel..."></td>
-                            <td class="col-dados"><strong>Espaço ${i}</strong></td>
-                            <td class="col-dados"><input class="field-edit" placeholder="MT"></td>
-                            <td class="col-dados"><input class="field-edit" placeholder="MT"></td>
-                            <td class="col-dados"><input class="field-edit" placeholder="MT"></td>
-                            <td class="col-dados"><input class="field-edit" placeholder="..."></td>
-                            <td class="col-dados"><input class="field-edit" placeholder="Tipo..."></td>
+                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'nome', this.value)" value="${d.nome || ''}" placeholder="..."></td>
+                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'contacto', this.value)" value="${d.contacto || ''}" placeholder="..."></td>
+                            <td><span style="font-weight:700; color:#64748b">#${i}</span></td>
+                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'preco_agua', this.value)" value="${d.preco_agua || ''}" placeholder="MT"></td>
+                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'divida', this.value)" value="${d.divida || ''}" placeholder="MT"></td>
+                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'valor_total', this.value)" value="${d.valor_total || ''}" placeholder="MT"></td>
+                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'observacao', this.value)" value="${d.observacao || ''}" placeholder="..."></td>
+                            <td><input class="field-edit" onchange="salvarCliente('${rowId}', 'pagamento_tipo', this.value)" value="${d.pagamento_tipo || ''}" placeholder="..."></td>
                             ${meses.map(m => {
-                                const id = `${condo.id}-${i}-${m}`;
-                                const st = statusData[id] || 'nao-pago';
-                                return `<td><button class="btn-status ${st}" onclick="mudarStatus('${id}', this)">${st.toUpperCase()}</button></td>`;
+                                const cid = `${rowId}-${m}`;
+                                const s = dbStatus[cid] || 'nao-pago';
+                                return `<td><button class="btn-status ${s}" onclick="mudarStatus('${cid}', this)">${s.toUpperCase()}</button></td>`;
                             }).join('')}
-                        </tr>
-                    `;
+                        </tr>`;
                 }
 
                 html += `</tbody></table></div>
-                        <textarea class="notes-area" placeholder="Notas sobre ${condo.nome}..."></textarea>
-                    </div>`;
+                    <div class="notes-section">
+                        <label class="notes-label">Notas do Condomínio:</label>
+                        <textarea class="notes-area" onchange="salvarCliente('${condo.id}', 'notas_condominio', this.value)" placeholder="Escreva avisos ou detalhes importantes aqui...">${condoData.notas_condominio || ''}</textarea>
+                    </div>
+                </div>`;
                 container.innerHTML += html;
             });
         }
 
-        async function mudarStatus(id, btn) {
-            const current = btn.classList.contains('nao-pago') ? 'nao-pago' : btn.classList.contains('pendente') ? 'pendente' : 'pago';
-            const next = current === 'nao-pago' ? 'pendente' : current === 'pendente' ? 'pago' : 'nao-pago';
+        async function salvarCliente(id, campo, valor) {
+            document.getElementById('syncLabel').innerText = "Salvando...";
+            document.getElementById('syncLabel').style.background = "#fff7ed";
+            document.getElementById('syncLabel').style.color = "#9a3412";
             
-            btn.className = `btn-status ${next}`;
-            btn.innerText = next.toUpperCase();
-            statusData[id] = next;
-
-            await _supabase.from('pagamentos').upsert({ id: id, status: next, mes: id.split('-').pop() });
+            const obj = { id: id };
+            obj[campo] = valor;
+            await _supabase.from('dados_clientes').upsert(obj);
+            
+            document.getElementById('syncLabel').innerText = "Salvo com sucesso";
+            document.getElementById('syncLabel').style.background = "#dcfce7";
+            document.getElementById('syncLabel').style.color = "#166534";
         }
 
-        window.onload = () => {
-            if (localStorage.getItem('auth_nexia_final') === 'true') {
-                abrirPainel();
-            }
-        };
+        async function mudarStatus(id, btn) {
+            const cur = btn.classList.contains('nao-pago') ? 'nao-pago' : btn.classList.contains('pendente') ? 'pendente' : 'pago';
+            const nxt = cur === 'nao-pago' ? 'pendente' : cur === 'pendente' ? 'pago' : 'nao-pago';
+            
+            btn.className = `btn-status ${nxt}`;
+            btn.innerText = nxt.toUpperCase();
+            
+            await _supabase.from('pagamentos').upsert({ id: id, status: nxt });
+        }
+
+        window.onload = () => { if (localStorage.getItem('auth_nexia_pro') === 'true') iniciarSistema(); };
     </script>
 </body>
 </html>
